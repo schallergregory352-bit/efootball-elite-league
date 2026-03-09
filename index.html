@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <title>eFootball Elite League</title>
@@ -10,32 +9,46 @@
 body{
 font-family:Arial;
 margin:0;
+background:#020b1a;
 color:white;
 text-align:center;
+}
 
-background:#020824;
+/* football star background */
+
+body::before{
+content:"";
+position:fixed;
+width:100%;
+height:100%;
 background-image:
 radial-gradient(white 1px, transparent 1px),
 radial-gradient(white 1px, transparent 1px);
 background-size:50px 50px;
-background-position:0 0,25px 25px;
+opacity:0.25;
+z-index:-1;
 }
 
 header{
+background:#001f54;
 padding:20px;
-font-size:28px;
-background:#001c54;
+font-size:30px;
+font-weight:bold;
 }
 
 nav{
-background:#002b80;
+background:#002a72;
 padding:10px;
 }
 
 nav button{
-padding:10px;
 margin:5px;
-font-weight:bold;
+padding:10px 18px;
+font-size:16px;
+border:none;
+background:#0d6efd;
+color:white;
+cursor:pointer;
 }
 
 .section{
@@ -43,26 +56,31 @@ display:none;
 padding:20px;
 }
 
-.active{
-display:block;
-}
-
 table{
 margin:auto;
 border-collapse:collapse;
-width:95%;
+width:90%;
 background:white;
 color:black;
 }
 
 th,td{
-border:1px solid #ddd;
+border:1px solid #ccc;
 padding:8px;
 }
 
 th{
-background:#003399;
+background:#0d6efd;
 color:white;
+}
+
+.news{
+background:white;
+color:black;
+padding:15px;
+margin:20px auto;
+width:80%;
+border-radius:8px;
 }
 
 </style>
@@ -72,41 +90,150 @@ color:white;
 <body>
 
 <header>
-🏆 eFootball Elite League
+⚽ eFootball Elite League
 </header>
 
-<body>
-
-<header>🏆 eFootball Elite League</header>
-
 <nav>
+
 <button onclick="showPage('tablePage')">League Table</button>
-<button onclick="showPage('fixturesPage')">Full Fixtures</button>
+<button onclick="showPage('fixturesPage')">Fixtures</button>
+<button onclick="showPage('resultsPage')">Results</button>
+<button onclick="showPage('newsPage')">News</button>
 <button onclick="adminLogin()">Admin</button>
+
 </nav>
 
-<!-- your pages here -->
+<!-- TABLE -->
 
-<script>
-function adminLogin(){
-let password = prompt("Enter Admin Password");
-
-if(password === "myleague2026"){
-showPage('adminPage');
-}
-else{
-alert("Access denied");
-}
-
-</script>
-
-<div id="tablePage" class="section active">
+<div id="tablePage" class="section">
 
 <h2>League Table</h2>
 
-<table id="leagueTable">
+<table id="leagueTable"></table>
+
+</div>
+
+<!-- FIXTURES -->
+
+<div id="fixturesPage" class="section">
+
+<h2>Season Fixtures</h2>
+
+<div id="fixtures"></div>
+
+</div>
+
+<!-- RESULTS -->
+
+<div id="resultsPage" class="section">
+
+<h2>Match Results</h2>
+
+<div id="results"></div>
+
+</div>
+
+<!-- NEWS -->
+
+<div id="newsPage" class="section">
+
+<h2>League News</h2>
+
+<div class="news">
+
+<h3>Season Kickoff</h3>
+
+<p>The eFootball Elite League season begins with 16 players competing for the championship title.</p>
+
+</div>
+
+</div>
+
+<!-- ADMIN -->
+
+<div id="adminPage" class="section">
+
+<h2>Admin Panel</h2>
+
+<select id="matchSelect"></select>
+
+<input type="number" id="homeGoals" placeholder="Home Goals">
+
+<input type="number" id="awayGoals" placeholder="Away Goals">
+
+<br><br>
+
+<button onclick="addResult()">Add Result</button>
+
+</div>
+
+<script>
+
+/* PLAYERS */
+
+let teams=[
+"Young Moni",
+"Superiorous",
+"EME-RE",
+"Rich Pious",
+"Teekay RM",
+"Gakiza",
+"Maze-30",
+"Play Dem",
+"Lord Emperor",
+"Kugordaea",
+"Hamza Burey",
+"PHL Dyke",
+"Mudathir1",
+"Chris Levito",
+"Tricks",
+"Bigi001"
+];
+
+let table=[];
+
+teams.forEach(name=>{
+table.push({name,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
+});
+
+/* PAGE SWITCH */
+
+function showPage(page){
+
+document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+
+document.getElementById(page).style.display="block";
+
+}
+
+/* ADMIN LOGIN */
+
+function adminLogin(){
+
+let pass=prompt("Admin Password");
+
+if(pass==="elite123"){
+
+showPage("adminPage");
+
+}else{
+
+alert("Wrong password");
+
+}
+
+}
+
+/* TABLE */
+
+function renderTable(){
+
+let t=document.getElementById("leagueTable");
+
+t.innerHTML=`
 
 <tr>
+<th>Pos</th>
 <th>Player</th>
 <th>P</th>
 <th>W</th>
@@ -117,226 +244,184 @@ alert("Access denied");
 <th>GD</th>
 <th>Pts</th>
 </tr>
+`;
 
-</table>
+table.sort((a,b)=>b.pts-a.pts);
 
-</div>
+table.forEach((team,i)=>{
 
-<div id="fixturesPage" class="section">
+let gd=team.gf-team.ga;
 
-<h2>Full Season Fixtures (14 Matchweeks)</h2>
+t.innerHTML+=`
 
-<div id="fixturesList"></div>
+<tr>
 
-</div>
+<td>${i+1}</td>
 
-<div id="adminPage" class="section">
+<td>${team.name}</td>
 
-<h2>Enter Match Result</h2>
+<td>${team.p}</td>
 
-<select id="team1"></select>
+<td>${team.w}</td>
 
-<input type="number" id="score1" placeholder="Goals">
+<td>${team.d}</td>
 
-<select id="team2"></select>
+<td>${team.l}</td>
 
-<input type="number" id="score2" placeholder="Goals">
+<td>${team.gf}</td>
 
-<button onclick="addResult()">Add Result</button>
+<td>${team.ga}</td>
 
-</div>
+<td>${gd}</td>
 
-<script>
+<td>${team.pts}</td>
 
-let players=[
-"Young Moni",
-"Superioreats",
-"EME-RE",
-"Rich Pheus",
-"Teekay KM",
-"Gakiya",
-"Maze-30",
-"Play dem",
-"Lord Emperorg",
-"Kugorouaca",
-"Hamza Gurley",
-"Phil Dyke",
-"Mudathiri",
-"Chris Leviti",
-"Tricks"
-];
+</tr>
 
-let stats=JSON.parse(localStorage.getItem("leagueStats"))||{};
-
-players.forEach(p=>{
-if(!stats[p]) stats[p]={P:0,W:0,D:0,L:0,GF:0,GA:0,GD:0,PTS:0};
-});
-
-function loadTeams(){
-
-let t1=document.getElementById("team1");
-let t2=document.getElementById("team2");
-
-players.forEach(p=>{
-
-let o1=document.createElement("option");
-o1.text=p;
-t1.add(o1);
-
-let o2=document.createElement("option");
-o2.text=p;
-t2.add(o2);
+`;
 
 });
 
 }
 
-function addResult(){
+/* FIXTURE GENERATOR */
 
-let team1=document.getElementById("team1").value;
-let team2=document.getElementById("team2").value;
-
-let s1=parseInt(document.getElementById("score1").value);
-let s2=parseInt(document.getElementById("score2").value);
-
-if(team1===team2) return alert("Teams must be different");
-
-stats[team1].P++;
-stats[team2].P++;
-
-stats[team1].GF+=s1;
-stats[team1].GA+=s2;
-
-stats[team2].GF+=s2;
-stats[team2].GA+=s1;
-
-stats[team1].GD=stats[team1].GF-stats[team1].GA;
-stats[team2].GD=stats[team2].GF-stats[team2].GA;
-
-if(s1>s2){
-
-stats[team1].W++;
-stats[team1].PTS+=3;
-stats[team2].L++;
-
-}
-
-else if(s2>s1){
-
-stats[team2].W++;
-stats[team2].PTS+=3;
-stats[team1].L++;
-
-}
-
-else{
-
-stats[team1].D++;
-stats[team2].D++;
-
-stats[team1].PTS+=1;
-stats[team2].PTS+=1;
-
-}
-
-localStorage.setItem("leagueStats",JSON.stringify(stats));
-
-renderTable();
-
-}
-
-function renderTable(){
-
-let table=document.getElementById("leagueTable");
-
-table.innerHTML=`<tr>
-<th>Player</th>
-<th>P</th>
-<th>W</th>
-<th>D</th>
-<th>L</th>
-<th>GF</th>
-<th>GA</th>
-<th>GD</th>
-<th>Pts</th>
-</tr>`;
-
-players.sort((a,b)=>stats[b].PTS-stats[a].PTS||stats[b].GD-stats[a].GD);
-
-players.forEach(p=>{
-
-let row=table.insertRow();
-
-row.insertCell(0).innerText=p;
-row.insertCell(1).innerText=stats[p].P;
-row.insertCell(2).innerText=stats[p].W;
-row.insertCell(3).innerText=stats[p].D;
-row.insertCell(4).innerText=stats[p].L;
-row.insertCell(5).innerText=stats[p].GF;
-row.insertCell(6).innerText=stats[p].GA;
-row.insertCell(7).innerText=stats[p].GD;
-row.insertCell(8).innerText=stats[p].PTS;
-
-});
-
-}
+let fixtures=[];
 
 function generateFixtures(){
 
-let teams=[...players];
+let list=[...teams];
 
-if(teams.length%2!==0){
-teams.push("BYE");
-}
+let rounds=list.length-1;
 
-let rounds=teams.length-1;
-let matches=teams.length/2;
-
-let html="";
+let half=list.length/2;
 
 for(let r=0;r<rounds;r++){
 
-html+="<h3>Matchweek "+(r+1)+"</h3>";
+let round=[];
 
-for(let m=0;m<matches;m++){
+for(let i=0;i<half;i++){
 
-let home=teams[m];
-let away=teams[teams.length-1-m];
-
-if(home!=="BYE" && away!=="BYE"){
-html+=home+" vs "+away+"<br>";
-}
-else{
-let byeTeam=home==="BYE"?away:home;
-html+="<i>"+byeTeam+" (Bye Week)</i><br>";
-}
+round.push({
+home:list[i],
+away:list[list.length-1-i]
+});
 
 }
 
-html+="<br>";
+fixtures.push(round);
 
-teams.splice(1,0,teams.pop());
-
-}
-
-document.getElementById("fixturesList").innerHTML=html;
+list.splice(1,0,list.pop());
 
 }
 
-function showPage(page){
-
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-
-document.getElementById(page).classList.add("active");
+renderFixtures();
 
 }
 
-loadTeams();
+/* SHOW FIXTURES */
+
+function renderFixtures(){
+
+let f=document.getElementById("fixtures");
+
+f.innerHTML="";
+
+fixtures.forEach((round,i)=>{
+
+f.innerHTML+=<h3>Matchday ${i+1}</h3>;
+
+round.forEach(match=>{
+
+f.innerHTML+=<p>${match.home} vs ${match.away}</p>;
+
+});
+
+});
+
+loadMatchSelector();
+
+}
+
+/* ADMIN MATCH SELECT */
+
+function loadMatchSelector(){
+
+let s=document.getElementById("matchSelect");
+
+fixtures.forEach((round,i)=>{
+
+round.forEach(match=>{
+
+let option=document.createElement("option");
+
+option.value=match.home+"|"+match.away;
+
+option.text=MD${i+1} : ${match.home} vs ${match.away};
+
+s.add(option);
+
+});
+
+});
+
+}
+
+/* RESULTS */
+
+function addResult(){
+
+let value=document.getElementById("matchSelect").value;
+
+let hg=parseInt(document.getElementById("homeGoals").value);
+
+let ag=parseInt(document.getElementById("awayGoals").value);
+
+let [home,away]=value.split("|");
+
+let h=table.find(t=>t.name==home);
+
+let a=table.find(t=>t.name==away);
+
+h.p++; a.p++;
+
+h.gf+=hg; h.ga+=ag;
+
+a.gf+=ag; a.ga+=hg;
+
+if(hg>ag){
+
+h.w++; a.l++; h.pts+=3;
+
+}else if(ag>hg){
+
+a.w++; h.l++; a.pts+=3;
+
+}else{
+
+h.d++; a.d++; h.pts++; a.pts++;
+
+}
+
+/* result history */
+
+document.getElementById("results").innerHTML+=
+
+<p>${home} ${hg} - ${ag} ${away}</p>;
+
 renderTable();
+
+}
+
+/* START */
+
 generateFixtures();
+
+renderTable();
+
+showPage("tablePage");
 
 </script>
 
 </body>
-
 </html>
