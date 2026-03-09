@@ -75,13 +75,30 @@ color:white;
 🏆 eFootball Elite League
 </header>
 
-<nav>
+<body>
 
+<header>🏆 eFootball Elite League</header>
+
+<nav>
 <button onclick="showPage('tablePage')">League Table</button>
 <button onclick="showPage('fixturesPage')">Full Fixtures</button>
-<button onclick="showPage('adminPage')">Add Result</button>
-
+<button onclick="adminLogin()">Admin</button>
 </nav>
+
+<!-- your pages here -->
+
+<script>
+function adminLogin(){
+let password = prompt("Enter Admin Password");
+
+if(password === "myleague2026"){
+showPage('adminPage');
+}
+else{
+alert("Access denied");
+}
+
+</script>
 
 <div id="tablePage" class="section active">
 
