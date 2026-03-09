@@ -1,50 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <title>eFootball Elite League</title>
 
 <style>
 
 body{
 font-family:Arial;
-margin:0;
-background:#020b1a;
+background:#021433;
 color:white;
 text-align:center;
-}
-
-/* football star background */
-
-body::before{
-content:"";
-position:fixed;
-width:100%;
-height:100%;
-background-image:
-radial-gradient(white 1px, transparent 1px),
-radial-gradient(white 1px, transparent 1px);
-background-size:50px 50px;
-opacity:0.25;
-z-index:-1;
+margin:0;
 }
 
 header{
-background:#001f54;
+background:#001c48;
 padding:20px;
-font-size:30px;
+font-size:28px;
 font-weight:bold;
 }
 
 nav{
-background:#002a72;
+background:#002b70;
 padding:10px;
 }
 
 nav button{
 margin:5px;
 padding:10px 18px;
-font-size:16px;
 border:none;
 background:#0d6efd;
 color:white;
@@ -74,32 +57,24 @@ background:#0d6efd;
 color:white;
 }
 
-.news{
-background:white;
-color:black;
-padding:15px;
-margin:20px auto;
-width:80%;
-border-radius:8px;
+input,select{
+padding:8px;
+margin:5px;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<header>
-⚽ eFootball Elite League
-</header>
+<header>⚽ eFootball Elite League</header>
 
 <nav>
 
-<button onclick="showPage('tablePage')">League Table</button>
+<button onclick="showPage('tablePage')">Table</button>
 <button onclick="showPage('fixturesPage')">Fixtures</button>
 <button onclick="showPage('resultsPage')">Results</button>
-<button onclick="showPage('newsPage')">News</button>
-<button onclick="adminLogin()">Admin</button>
+<button onclick="showPage('adminPage')">Admin</button>
 
 </nav>
 
@@ -109,6 +84,11 @@ border-radius:8px;
 
 <h2>League Table</h2>
 
+<select onchange="switchSeason(this.value)">
+<option value="1">Season 1</option>
+<option value="2">Season 2</option>
+</select>
+
 <table id="leagueTable"></table>
 
 </div>
@@ -117,7 +97,7 @@ border-radius:8px;
 
 <div id="fixturesPage" class="section">
 
-<h2>Season Fixtures</h2>
+<h2>Fixtures</h2>
 
 <div id="fixtures"></div>
 
@@ -127,25 +107,9 @@ border-radius:8px;
 
 <div id="resultsPage" class="section">
 
-<h2>Match Results</h2>
+<h2>Results</h2>
 
 <div id="results"></div>
-
-</div>
-
-<!-- NEWS -->
-
-<div id="newsPage" class="section">
-
-<h2>League News</h2>
-
-<div class="news">
-
-<h3>Season Kickoff</h3>
-
-<p>The eFootball Elite League season begins with 16 players competing for the championship title.</p>
-
-</div>
 
 </div>
 
@@ -153,17 +117,29 @@ border-radius:8px;
 
 <div id="adminPage" class="section">
 
-<h2>Admin Panel</h2>
+<h2>Admin Login</h2>
+
+<input type="password" id="adminPass" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+<div id="adminPanel" style="display:none">
+
+<h3>Add Result</h3>
 
 <select id="matchSelect"></select>
 
-<input type="number" id="homeGoals" placeholder="Home Goals">
+<input type="number" id="hg" placeholder="Home">
 
-<input type="number" id="awayGoals" placeholder="Away Goals">
+<input type="number" id="ag" placeholder="Away">
+
+<button onclick="addResult()">Save Result</button>
 
 <br><br>
 
-<button onclick="addResult()">Add Result</button>
+<button onclick="resetSeason()">Reset Season</button>
+
+</div>
 
 </div>
 
@@ -172,6 +148,7 @@ border-radius:8px;
 /* PLAYERS */
 
 let teams=[
+
 "Young Moni",
 "Superiorous",
 "EME-RE",
@@ -188,39 +165,68 @@ let teams=[
 "Chris Levito",
 "Tricks",
 "Bigi001"
+
 ];
+
+let season=1;
+
+/* LOAD DATA */
+
+let saved=localStorage.getItem("leagueData");
+
+let data=saved?JSON.parse(saved):{};
+
+/* CREATE TABLE */
+
+function createTable(){
 
 let table=[];
 
-teams.forEach(name=>{
-table.push({name,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
+teams.forEach(t=>{
+
+table.push({
+
+name:t,
+p:0,w:0,d:0,l:0,
+gf:0,ga:0,pts:0
+
 });
+
+});
+
+return table;
+
+}
+
+if(!data["season1"]) data["season1"]={table:createTable(),results:[]};
+if(!data["season2"]) data["season2"]={table:createTable(),results:[]};
+
+/* SAVE */
+
+function save(){
+
+localStorage.setItem("leagueData",JSON.stringify(data));
+
+}
 
 /* PAGE SWITCH */
 
-function showPage(page){
+function showPage(p){
 
 document.querySelectorAll(".section").forEach(s=>s.style.display="none");
 
-document.getElementById(page).style.display="block";
+document.getElementById(p).style.display="block";
 
 }
 
-/* ADMIN LOGIN */
+/* SWITCH SEASON */
 
-function adminLogin(){
+function switchSeason(s){
 
-let pass=prompt("Admin Password");
+season=parseInt(s);
 
-if(pass==="elite123"){
-
-showPage("adminPage");
-
-}else{
-
-alert("Wrong password");
-
-}
+renderTable();
+renderResults();
 
 }
 
@@ -230,8 +236,11 @@ function renderTable(){
 
 let t=document.getElementById("leagueTable");
 
-t.innerHTML=`
+let table=data["season"+season].table;
 
+table.sort((a,b)=>b.pts-a.pts);
+
+t.innerHTML=`
 <tr>
 <th>Pos</th>
 <th>Player</th>
@@ -246,45 +255,30 @@ t.innerHTML=`
 </tr>
 `;
 
-table.sort((a,b)=>b.pts-a.pts);
-
 table.forEach((team,i)=>{
 
 let gd=team.gf-team.ga;
 
 t.innerHTML+=`
-
 <tr>
-
 <td>${i+1}</td>
-
 <td>${team.name}</td>
-
 <td>${team.p}</td>
-
 <td>${team.w}</td>
-
 <td>${team.d}</td>
-
 <td>${team.l}</td>
-
 <td>${team.gf}</td>
-
 <td>${team.ga}</td>
-
 <td>${gd}</td>
-
 <td>${team.pts}</td>
-
 </tr>
-
 `;
 
 });
 
 }
 
-/* FIXTURE GENERATOR */
+/* FIXTURES */
 
 let fixtures=[];
 
@@ -316,50 +310,63 @@ list.splice(1,0,list.pop());
 }
 
 renderFixtures();
+loadMatchSelect();
 
 }
-
-/* SHOW FIXTURES */
 
 function renderFixtures(){
 
 let f=document.getElementById("fixtures");
 
-f.innerHTML="";
-
 fixtures.forEach((round,i)=>{
 
 f.innerHTML+=<h3>Matchday ${i+1}</h3>;
 
-round.forEach(match=>{
+round.forEach(m=>{
 
-f.innerHTML+=<p>${match.home} vs ${match.away}</p>;
-
-});
+f.innerHTML+=<p>${m.home} vs ${m.away}</p>;
 
 });
 
-loadMatchSelector();
+});
 
 }
 
-/* ADMIN MATCH SELECT */
+/* ADMIN */
 
-function loadMatchSelector(){
+function login(){
+
+let p=document.getElementById("adminPass").value;
+
+if(p==="elite123"){
+
+document.getElementById("adminPanel").style.display="block";
+
+}else{
+
+alert("Wrong password");
+
+}
+
+}
+
+/* MATCH SELECT */
+
+function loadMatchSelect(){
 
 let s=document.getElementById("matchSelect");
 
 fixtures.forEach((round,i)=>{
 
-round.forEach(match=>{
+round.forEach(m=>{
 
-let option=document.createElement("option");
+let o=document.createElement("option");
 
-option.value=match.home+"|"+match.away;
+o.value=m.home+"|"+m.away;
 
-option.text=MD${i+1} : ${match.home} vs ${match.away};
+o.text=MD${i+1}: ${m.home} vs ${m.away};
 
-s.add(option);
+s.add(o);
 
 });
 
@@ -367,49 +374,82 @@ s.add(option);
 
 }
 
-/* RESULTS */
+/* ADD RESULT */
 
 function addResult(){
 
-let value=document.getElementById("matchSelect").value;
+let v=document.getElementById("matchSelect").value;
 
-let hg=parseInt(document.getElementById("homeGoals").value);
+let hg=parseInt(document.getElementById("hg").value);
 
-let ag=parseInt(document.getElementById("awayGoals").value);
+let ag=parseInt(document.getElementById("ag").value);
 
-let [home,away]=value.split("|");
+let [home,away]=v.split("|");
+
+let table=data["season"+season].table;
 
 let h=table.find(t=>t.name==home);
 
 let a=table.find(t=>t.name==away);
 
-h.p++; a.p++;
+h.p++;a.p++;
 
-h.gf+=hg; h.ga+=ag;
-
-a.gf+=ag; a.ga+=hg;
+h.gf+=hg;h.ga+=ag;
+a.gf+=ag;a.ga+=hg;
 
 if(hg>ag){
 
-h.w++; a.l++; h.pts+=3;
+h.w++;a.l++;h.pts+=3;
 
 }else if(ag>hg){
 
-a.w++; h.l++; a.pts+=3;
+a.w++;h.l++;a.pts+=3;
 
 }else{
 
-h.d++; a.d++; h.pts++; a.pts++;
+h.d++;a.d++;h.pts++;a.pts++;
 
 }
 
-/* result history */
+data["season"+season].results.push(${home} ${hg}-${ag} ${away});
 
-document.getElementById("results").innerHTML+=
-
-<p>${home} ${hg} - ${ag} ${away}</p>;
+save();
 
 renderTable();
+renderResults();
+
+}
+
+/* RESULTS */
+
+function renderResults(){
+
+let r=document.getElementById("results");
+
+r.innerHTML="";
+
+data["season"+season].results.forEach(x=>{
+
+r.innerHTML+=<p>${x}</p>;
+
+});
+
+}
+
+/* RESET */
+
+function resetSeason(){
+
+if(confirm("Reset this season?")){
+
+data["season"+season]={table:createTable(),results:[]};
+
+save();
+
+renderTable();
+renderResults();
+
+}
 
 }
 
@@ -418,6 +458,8 @@ renderTable();
 generateFixtures();
 
 renderTable();
+
+renderResults();
 
 showPage("tablePage");
 
