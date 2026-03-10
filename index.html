@@ -7,37 +7,65 @@
 
 body{
 font-family:Arial;
-background:#021433;
+margin:0;
+background:#020b1a;
 color:white;
 text-align:center;
-margin:0;
 }
 
+/* star background */
+
+body::before{
+content:"";
+position:fixed;
+width:100%;
+height:100%;
+background-image:
+radial-gradient(white 1px, transparent 1px),
+radial-gradient(white 1px, transparent 1px);
+background-size:50px 50px;
+opacity:0.3;
+z-index:-1;
+}
+
+/* header */
+
 header{
-background:#001c48;
+background:#001f54;
 padding:20px;
-font-size:28px;
+font-size:30px;
 font-weight:bold;
 }
 
+/* navigation */
+
 nav{
-background:#002b70;
+background:#002a72;
 padding:10px;
 }
 
 nav button{
 margin:5px;
-padding:10px 18px;
+padding:10px 20px;
+font-size:16px;
 border:none;
 background:#0d6efd;
 color:white;
 cursor:pointer;
 }
 
+nav button:hover{
+background:#1f7dff;
+}
+
+/* sections */
+
 .section{
 display:none;
 padding:20px;
 }
+
+/* table */
 
 table{
 margin:auto;
@@ -63,18 +91,22 @@ margin:5px;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<header>⚽ eFootball Elite League</header>
+<header>
+⚽ eFootball Elite League
+</header>
 
 <nav>
 
-<button onclick="showPage('tablePage')">Table</button>
+<button onclick="showPage('tablePage')">League Table</button>
+
 <button onclick="showPage('fixturesPage')">Fixtures</button>
-<button onclick="showPage('resultsPage')">Results</button>
-<button onclick="showPage('adminPage')">Admin</button>
+
+<button onclick="adminLogin()">Admin</button>
 
 </nav>
 
@@ -84,163 +116,8 @@ margin:5px;
 
 <h2>League Table</h2>
 
-<select onchange="switchSeason(this.value)">
-<option value="1">Season 1</option>
-<option value="2">Season 2</option>
-</select>
+<table id="leagueTable">
 
-<table id="leagueTable"></table>
-
-</div>
-
-<!-- FIXTURES -->
-
-<div id="fixturesPage" class="section">
-
-<h2>Fixtures</h2>
-
-<div id="fixtures"></div>
-
-</div>
-
-<!-- RESULTS -->
-
-<div id="resultsPage" class="section">
-
-<h2>Results</h2>
-
-<div id="results"></div>
-
-</div>
-
-<!-- ADMIN -->
-
-<div id="adminPage" class="section">
-
-<h2>Admin Login</h2>
-
-<input type="password" id="adminPass" placeholder="Password">
-
-<button onclick="login()">Login</button>
-
-<div id="adminPanel" style="display:none">
-
-<h3>Add Result</h3>
-
-<select id="matchSelect"></select>
-
-<input type="number" id="hg" placeholder="Home">
-
-<input type="number" id="ag" placeholder="Away">
-
-<button onclick="addResult()">Save Result</button>
-
-<br><br>
-
-<button onclick="resetSeason()">Reset Season</button>
-
-</div>
-
-</div>
-
-<script>
-
-/* PLAYERS */
-
-let teams=[
-
-"Young Moni",
-"Superiorous",
-"EME-RE",
-"Rich Pious",
-"Teekay RM",
-"Gakiza",
-"Maze-30",
-"Play Dem",
-"Lord Emperor",
-"Kugordaea",
-"Hamza Burey",
-"PHL Dyke",
-"Mudathir1",
-"Chris Levito",
-"Tricks",
-"Bigi001"
-
-];
-
-let season=1;
-
-/* LOAD DATA */
-
-let saved=localStorage.getItem("leagueData");
-
-let data=saved?JSON.parse(saved):{};
-
-/* CREATE TABLE */
-
-function createTable(){
-
-let table=[];
-
-teams.forEach(t=>{
-
-table.push({
-
-name:t,
-p:0,w:0,d:0,l:0,
-gf:0,ga:0,pts:0
-
-});
-
-});
-
-return table;
-
-}
-
-if(!data["season1"]) data["season1"]={table:createTable(),results:[]};
-if(!data["season2"]) data["season2"]={table:createTable(),results:[]};
-
-/* SAVE */
-
-function save(){
-
-localStorage.setItem("leagueData",JSON.stringify(data));
-
-}
-
-/* PAGE SWITCH */
-
-function showPage(p){
-
-document.querySelectorAll(".section").forEach(s=>s.style.display="none");
-
-document.getElementById(p).style.display="block";
-
-}
-
-/* SWITCH SEASON */
-
-function switchSeason(s){
-
-season=parseInt(s);
-
-renderTable();
-renderResults();
-
-}
-
-/* TABLE */
-
-function renderTable(){
-
-let t=document.getElementById("leagueTable");
-
-let table=data["season"+season].table;
-
-table.sort((a,b)=>b.pts-a.pts);
-
-t.innerHTML=`
 <tr>
 <th>Pos</th>
 <th>Player</th>
@@ -253,96 +130,89 @@ t.innerHTML=`
 <th>GD</th>
 <th>Pts</th>
 </tr>
-`;
 
-table.forEach((team,i)=>{
+</table>
 
-let gd=team.gf-team.ga;
+</div>
 
-t.innerHTML+=`
-<tr>
-<td>${i+1}</td>
-<td>${team.name}</td>
-<td>${team.p}</td>
-<td>${team.w}</td>
-<td>${team.d}</td>
-<td>${team.l}</td>
-<td>${team.gf}</td>
-<td>${team.ga}</td>
-<td>${gd}</td>
-<td>${team.pts}</td>
-</tr>
-`;
+<!-- FIXTURES -->
 
-});
+<div id="fixturesPage" class="section">
 
-}
+<h2>Fixtures</h2>
 
-/* FIXTURES */
+<p>Fixtures will be generated for the season.</p>
 
-let fixtures=[];
+</div>
 
-function generateFixtures(){
+<!-- ADMIN -->
 
-let list=[...teams];
+<div id="adminPage" class="section">
 
-let rounds=list.length-1;
+<h2>Admin Panel</h2>
 
-let half=list.length/2;
+<select id="homeTeam"></select>
 
-for(let r=0;r<rounds;r++){
+<input type="number" id="homeGoals" placeholder="Goals">
 
-let round=[];
+<select id="awayTeam"></select>
 
-for(let i=0;i<half;i++){
+<input type="number" id="awayGoals" placeholder="Goals">
 
-round.push({
-home:list[i],
-away:list[list.length-1-i]
-});
+<br><br>
 
-}
+<button onclick="addResult()">Add Result</button>
 
-fixtures.push(round);
+</div>
 
-list.splice(1,0,list.pop());
+<script>
 
-}
+/* PLAYERS */
 
-renderFixtures();
-loadMatchSelect();
+let teams=[
 
-}
+{name:"Young Moni",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Superiorous",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"EME-RE",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Rich Pious",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Teekay RM",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Gakiza",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Maze-30",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Play Dem",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Lord Emperor",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Kugordaea",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Hamza",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"PHL Dyke",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Mudathir1",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Chris01",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Bigi001",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Guest Player",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0}
 
-function renderFixtures(){
+];
 
-let f=document.getElementById("fixtures");
+/* SHOW PAGE */
 
-fixtures.forEach((round,i)=>{
+function showPage(page){
 
-f.innerHTML+=<h3>Matchday ${i+1}</h3>;
+document.querySelectorAll(".section").forEach(s=>s.style.display="none");
 
-round.forEach(m=>{
-
-f.innerHTML+=<p>${m.home} vs ${m.away}</p>;
-
-});
-
-});
+document.getElementById(page).style.display="block";
 
 }
 
-/* ADMIN */
+/* ADMIN PASSWORD */
 
-function login(){
+function adminLogin(){
 
-let p=document.getElementById("adminPass").value;
+let pass=prompt("Enter Admin Password");
 
-if(p==="elite123"){
+if(pass==="elite123"){
 
-document.getElementById("adminPanel").style.display="block";
+showPage("adminPage");
 
-}else{
+}
+
+else{
 
 alert("Wrong password");
 
@@ -350,25 +220,84 @@ alert("Wrong password");
 
 }
 
-/* MATCH SELECT */
+/* LOAD TEAMS */
 
-function loadMatchSelect(){
+function loadTeams(){
 
-let s=document.getElementById("matchSelect");
+let select1=document.getElementById("homeTeam");
 
-fixtures.forEach((round,i)=>{
+let select2=document.getElementById("awayTeam");
 
-round.forEach(m=>{
+teams.forEach(team=>{
 
-let o=document.createElement("option");
+let option=document.createElement("option");
 
-o.value=m.home+"|"+m.away;
+option.text=team.name;
 
-o.text=MD${i+1}: ${m.home} vs ${m.away};
+select1.add(option.cloneNode(true));
 
-s.add(o);
+select2.add(option);
 
 });
+
+}
+
+/* TABLE */
+
+function renderTable(){
+
+let table=document.getElementById("leagueTable");
+
+table.innerHTML=`
+
+<tr>
+<th>Pos</th>
+<th>Player</th>
+<th>P</th>
+<th>W</th>
+<th>D</th>
+<th>L</th>
+<th>GF</th>
+<th>GA</th>
+<th>GD</th>
+<th>Pts</th>
+</tr>
+
+`;
+
+teams.sort((a,b)=>b.pts-a.pts);
+
+teams.forEach((team,i)=>{
+
+let gd=team.gf-team.ga;
+
+table.innerHTML+=`
+
+<tr>
+
+<td>${i+1}</td>
+
+<td>${team.name}</td>
+
+<td>${team.p}</td>
+
+<td>${team.w}</td>
+
+<td>${team.d}</td>
+
+<td>${team.l}</td>
+
+<td>${team.gf}</td>
+
+<td>${team.ga}</td>
+
+<td>${gd}</td>
+
+<td>${team.pts}</td>
+
+</tr>
+
+`;
 
 });
 
@@ -378,88 +307,69 @@ s.add(o);
 
 function addResult(){
 
-let v=document.getElementById("matchSelect").value;
+let home=document.getElementById("homeTeam").value;
 
-let hg=parseInt(document.getElementById("hg").value);
+let away=document.getElementById("awayTeam").value;
 
-let ag=parseInt(document.getElementById("ag").value);
+let hg=parseInt(document.getElementById("homeGoals").value);
 
-let [home,away]=v.split("|");
+let ag=parseInt(document.getElementById("awayGoals").value);
 
-let table=data["season"+season].table;
+let h=teams.find(t=>t.name===home);
 
-let h=table.find(t=>t.name==home);
+let a=teams.find(t=>t.name===away);
 
-let a=table.find(t=>t.name==away);
+h.p++; a.p++;
 
-h.p++;a.p++;
+h.gf+=hg;
 
-h.gf+=hg;h.ga+=ag;
-a.gf+=ag;a.ga+=hg;
+h.ga+=ag;
+
+a.gf+=ag;
+
+a.ga+=hg;
 
 if(hg>ag){
 
-h.w++;a.l++;h.pts+=3;
+h.w++;
 
-}else if(ag>hg){
+a.l++;
 
-a.w++;h.l++;a.pts+=3;
-
-}else{
-
-h.d++;a.d++;h.pts++;a.pts++;
+h.pts+=3;
 
 }
 
-data["season"+season].results.push(${home} ${hg}-${ag} ${away});
+else if(ag>hg){
 
-save();
+a.w++;
+
+h.l++;
+
+a.pts+=3;
+
+}
+
+else{
+
+h.d++;
+
+a.d++;
+
+h.pts++;
+
+a.pts++;
+
+}
 
 renderTable();
-renderResults();
-
-}
-
-/* RESULTS */
-
-function renderResults(){
-
-let r=document.getElementById("results");
-
-r.innerHTML="";
-
-data["season"+season].results.forEach(x=>{
-
-r.innerHTML+=<p>${x}</p>;
-
-});
-
-}
-
-/* RESET */
-
-function resetSeason(){
-
-if(confirm("Reset this season?")){
-
-data["season"+season]={table:createTable(),results:[]};
-
-save();
-
-renderTable();
-renderResults();
-
-}
 
 }
 
 /* START */
 
-generateFixtures();
+loadTeams();
 
 renderTable();
-
-renderResults();
 
 showPage("tablePage");
 
