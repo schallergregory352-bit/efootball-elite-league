@@ -13,27 +13,12 @@ color:white;
 text-align:center;
 }
 
-/* star background */
-
-body::before{
-content:"";
-position:fixed;
-width:100%;
-height:100%;
-background-image:
-radial-gradient(white 1px, transparent 1px),
-radial-gradient(white 1px, transparent 1px);
-background-size:50px 50px;
-opacity:0.3;
-z-index:-1;
-}
-
 /* header */
 
 header{
 background:#001f54;
 padding:20px;
-font-size:30px;
+font-size:32px;
 font-weight:bold;
 }
 
@@ -58,14 +43,10 @@ nav button:hover{
 background:#1f7dff;
 }
 
-/* sections */
-
 .section{
 display:none;
 padding:20px;
 }
-
-/* table */
 
 table{
 margin:auto;
@@ -104,7 +85,7 @@ margin:5px;
 
 <button onclick="showPage('tablePage')">League Table</button>
 
-<button onclick="showPage('fixturesPage')">Fixtures</button>
+<button onclick="showPage('fixturesPage')">Match History</button>
 
 <button onclick="adminLogin()">Admin</button>
 
@@ -116,32 +97,25 @@ margin:5px;
 
 <h2>League Table</h2>
 
-<table id="leagueTable">
-
-<tr>
-<th>Pos</th>
-<th>Player</th>
-<th>P</th>
-<th>W</th>
-<th>D</th>
-<th>L</th>
-<th>GF</th>
-<th>GA</th>
-<th>GD</th>
-<th>Pts</th>
-</tr>
-
-</table>
+<table id="leagueTable"></table>
 
 </div>
 
-<!-- FIXTURES -->
+<!-- MATCH HISTORY -->
 
 <div id="fixturesPage" class="section">
 
-<h2>Fixtures</h2>
+<h2>Match History</h2>
 
-<p>Fixtures will be generated for the season.</p>
+<table id="historyTable">
+
+<tr>
+<th>Home</th>
+<th>Score</th>
+<th>Away</th>
+</tr>
+
+</table>
 
 </div>
 
@@ -163,32 +137,48 @@ margin:5px;
 
 <button onclick="addResult()">Add Result</button>
 
+<button onclick="resetLeague()">Reset League</button>
+
 </div>
 
 <script>
 
-/* PLAYERS */
+/* DEFAULT TEAMS */
 
-let teams=[
+const defaultTeams=[
 
 {name:"Young Moni",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"Superiorous",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"EME-RE",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
-{name:"Rich Pious",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
-{name:"Teekay RM",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
-{name:"Gakiza",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Rich Phocus",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Teekay",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Gaki",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"Maze-30",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"Play Dem",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
-{name:"Lord Emperor",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
-{name:"Kugordaea",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Lord Emperor09",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
+{name:"Kuqaraaca",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"Hamza",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"PHL Dyke",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"Mudathir1",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"Chris01",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
 {name:"Bigi001",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0},
-{name:"Guest Player",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0}
+{name:"Tricks",p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0}
 
 ];
+
+let teams=JSON.parse(localStorage.getItem("league"))||defaultTeams;
+
+let history=JSON.parse(localStorage.getItem("history"))||[];
+
+/* SAVE */
+
+function save(){
+
+localStorage.setItem("league",JSON.stringify(teams));
+
+localStorage.setItem("history",JSON.stringify(history));
+
+}
 
 /* SHOW PAGE */
 
@@ -200,7 +190,7 @@ document.getElementById(page).style.display="block";
 
 }
 
-/* ADMIN PASSWORD */
+/* ADMIN */
 
 function adminLogin(){
 
@@ -210,9 +200,7 @@ if(pass==="elite123"){
 
 showPage("adminPage");
 
-}
-
-else{
+}else{
 
 alert("Wrong password");
 
@@ -220,23 +208,35 @@ alert("Wrong password");
 
 }
 
-/* LOAD TEAMS */
+/* LOAD TEAM SELECT */
 
 function loadTeams(){
 
-let select1=document.getElementById("homeTeam");
+let home=document.getElementById("homeTeam");
 
-let select2=document.getElementById("awayTeam");
+let away=document.getElementById("awayTeam");
 
-teams.forEach(team=>{
+home.innerHTML="";
 
-let option=document.createElement("option");
+away.innerHTML="";
 
-option.text=team.name;
+teams.forEach(t=>{
 
-select1.add(option.cloneNode(true));
+let o1=document.createElement("option");
 
-select2.add(option);
+o1.value=t.name;
+
+o1.text=t.name;
+
+home.appendChild(o1);
+
+let o2=document.createElement("option");
+
+o2.value=t.name;
+
+o2.text=t.name;
+
+away.appendChild(o2);
 
 });
 
@@ -246,60 +246,125 @@ select2.add(option);
 
 function renderTable(){
 
-let table=document.getElementById("leagueTable");
+teams.sort((a,b)=>{
 
-table.innerHTML=`
+if(b.pts!==a.pts) return b.pts-a.pts;
+
+let gdA=a.gf-a.ga;
+
+let gdB=b.gf-b.ga;
+
+if(gdB!==gdA) return gdB-gdA;
+
+return b.gf-a.gf;
+
+});
+
+let html=`
 
 <tr>
+
 <th>Pos</th>
+
 <th>Player</th>
+
 <th>P</th>
+
 <th>W</th>
+
 <th>D</th>
+
 <th>L</th>
+
 <th>GF</th>
+
 <th>GA</th>
+
 <th>GD</th>
+
 <th>Pts</th>
+
 </tr>
 
 `;
 
-teams.sort((a,b)=>b.pts-a.pts);
+teams.forEach((t,i)=>{
 
-teams.forEach((team,i)=>{
+let gd=t.gf-t.ga;
 
-let gd=team.gf-team.ga;
-
-table.innerHTML+=`
+html+=`
 
 <tr>
 
 <td>${i+1}</td>
 
-<td>${team.name}</td>
+<td>${t.name}</td>
 
-<td>${team.p}</td>
+<td>${t.p}</td>
 
-<td>${team.w}</td>
+<td>${t.w}</td>
 
-<td>${team.d}</td>
+<td>${t.d}</td>
 
-<td>${team.l}</td>
+<td>${t.l}</td>
 
-<td>${team.gf}</td>
+<td>${t.gf}</td>
 
-<td>${team.ga}</td>
+<td>${t.ga}</td>
 
 <td>${gd}</td>
 
-<td>${team.pts}</td>
+<td>${t.pts}</td>
 
 </tr>
 
 `;
 
 });
+
+document.getElementById("leagueTable").innerHTML=html;
+
+}
+
+/* HISTORY */
+
+function renderHistory(){
+
+let table=document.getElementById("historyTable");
+
+let html=`
+
+<tr>
+
+<th>Home</th>
+
+<th>Score</th>
+
+<th>Away</th>
+
+</tr>
+
+`;
+
+history.forEach(m=>{
+
+html+=`
+
+<tr>
+
+<td>${m.home}</td>
+
+<td>${m.hg} - ${m.ag}</td>
+
+<td>${m.away}</td>
+
+</tr>
+
+`;
+
+});
+
+table.innerHTML=html;
 
 }
 
@@ -311,9 +376,25 @@ let home=document.getElementById("homeTeam").value;
 
 let away=document.getElementById("awayTeam").value;
 
+if(home===away){
+
+alert("Teams cannot play themselves");
+
+return;
+
+}
+
 let hg=parseInt(document.getElementById("homeGoals").value);
 
 let ag=parseInt(document.getElementById("awayGoals").value);
+
+if(isNaN(hg)||isNaN(ag)){
+
+alert("Enter goals");
+
+return;
+
+}
 
 let h=teams.find(t=>t.name===home);
 
@@ -321,47 +402,47 @@ let a=teams.find(t=>t.name===away);
 
 h.p++; a.p++;
 
-h.gf+=hg;
+h.gf+=hg; h.ga+=ag;
 
-h.ga+=ag;
-
-a.gf+=ag;
-
-a.ga+=hg;
+a.gf+=ag; a.ga+=hg;
 
 if(hg>ag){
 
-h.w++;
+h.w++; a.l++; h.pts+=3;
 
-a.l++;
+}else if(ag>hg){
 
-h.pts+=3;
+a.w++; h.l++; a.pts+=3;
 
-}
+}else{
 
-else if(ag>hg){
-
-a.w++;
-
-h.l++;
-
-a.pts+=3;
+h.d++; a.d++; h.pts++; a.pts++;
 
 }
 
-else{
+/* save match */
 
-h.d++;
+history.push({home,away,hg,ag});
 
-a.d++;
-
-h.pts++;
-
-a.pts++;
-
-}
+save();
 
 renderTable();
+
+renderHistory();
+
+}
+
+/* RESET */
+
+function resetLeague(){
+
+if(confirm("Reset League?")){
+
+localStorage.clear();
+
+location.reload();
+
+}
 
 }
 
@@ -370,6 +451,8 @@ renderTable();
 loadTeams();
 
 renderTable();
+
+renderHistory();
 
 showPage("tablePage");
 
